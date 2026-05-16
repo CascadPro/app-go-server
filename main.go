@@ -1,0 +1,44 @@
+package main
+
+import (
+	"net/http"
+	"strconv"
+
+	"github.com/gin-gonic/gin"
+
+	"cascade/pkg/logger"
+	"cascade/pkg/utils"
+
+)
+
+func main() {
+	gin.SetMode(gin.ReleaseMode)
+
+	logger.InitLogger()
+
+	cfg, err := utils.LoadConfig()
+	if err != nil {
+		logger.Error("❌ Failed to load config", err)
+		return
+	}
+
+	router := gin.New()
+	router.Use(gin.Logger())
+	router.Use(gin.Recovery())
+
+	// Define a simple GET endpoint
+	router.GET("/ping", func(c *gin.Context) {
+		// Return JSON response
+		c.JSON(http.StatusOK, gin.H{
+			"message": "pong",
+		})
+	})
+
+	address := ":" + strconv.Itoa(cfg.ApplicationPort)
+
+	logger.Info("🚀 Server is running at " + cfg.ApplicationUrl)
+
+	if err := router.Run(address); err != nil {
+		logger.Error("Error starting server", err)
+	}
+}
