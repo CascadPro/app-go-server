@@ -29,5 +29,5 @@ func GenerateRegisterToken(c *gin.Context) {
 
 	config.DB.Model(&models.Token{}).Create(&token)
 
-	c.JSON(http.StatusOK, gin.H{"message": "Token successfully generated!"})
+	c.JSON(http.StatusOK, gin.H{"message": "Token successfully generated!", "token": token.Token})
 }
