@@ -6,9 +6,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"cascade/config"
 	"cascade/pkg/logger"
 	"cascade/pkg/utils"
-
 )
 
 func main() {
@@ -21,6 +21,8 @@ func main() {
 		logger.Error("❌ Failed to load config", err)
 		return
 	}
+
+	config.ConnectDatabase(cfg)
 
 	router := gin.New()
 	router.Use(gin.Logger())
