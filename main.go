@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"cascade/config"
+	"cascade/internal/handlers/auth"
 	"cascade/pkg/logger"
 	"cascade/pkg/utils"
 )
@@ -29,13 +30,16 @@ func main() {
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 
-	// Define a simple GET endpoint
 	router.GET("/ping", func(c *gin.Context) {
-		// Return JSON response
 		c.JSON(http.StatusOK, gin.H{
 			"message": "pong",
 		})
 	})
+
+	{
+		r_auth := router.Group("/auth")
+		r_auth.GET("/token", auth.GenerateRegisterToken)
+	}
 
 	address := ":" + strconv.Itoa(cfg.ApplicationPort)
 
