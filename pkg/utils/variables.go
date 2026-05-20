@@ -20,6 +20,10 @@ type Config struct {
 	PostgresHost     string
 	PostgresPort     int
 	PostgresDatabase string
+
+	RedisPassword string
+	RedisHost     string
+	RedisPort     int
 }
 
 func LoadConfig() (*Config, error) {
@@ -37,6 +41,11 @@ func LoadConfig() (*Config, error) {
 		return nil, err
 	}
 
+	redisPort, err := strconv.Atoi(getEnv("REDIS_PORT", "6379"))
+	if err != nil {
+		return nil, err
+	}
+
 	allowedOrigins := getEnv("ALLOWED_ORIGINS", "")
 	allowedOriginsList := strings.Split(allowedOrigins, ",")
 
@@ -50,6 +59,10 @@ func LoadConfig() (*Config, error) {
 		PostgresHost:     getEnv("POSTGRES_HOST", ""),
 		PostgresPort:     postgresPort,
 		PostgresDatabase: getEnv("POSTGRES_DATABASE", ""),
+
+		RedisPassword: getEnv("REDIS_PASSWORD", ""),
+		RedisHost:     getEnv("REDIS_HOST", ""),
+		RedisPort:     redisPort,
 	}
 
 	return config, nil

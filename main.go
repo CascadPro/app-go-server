@@ -22,7 +22,8 @@ func main() {
 		return
 	}
 
-	config.ConnectDatabase(cfg)
+	config.ConnectPgDatabase(cfg)
+	config.ConnectRedisDatabase(cfg)
 
 	router := gin.New()
 	router.Use(gin.Logger())
