@@ -32,7 +32,6 @@ func ConnectPgDatabase(cfg *utils.Config) {
 	logger.Info("✅ PostgreSQL database connection established successfully")
 
 	err = DB.AutoMigrate(&models.User{}, &models.Token{})
-
 	if err != nil {
 		logger.Error("❌ Error during PostgreSQL migration: %v", err)
 	}

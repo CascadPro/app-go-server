@@ -1,7 +1,6 @@
 package models
 
 import (
-	"database/sql/driver"
 	"time"
 
 	"github.com/google/uuid"
@@ -10,29 +9,20 @@ import (
 type UserRole string
 
 const (
-	RoleRegular        UserRole = "regular"
-	RoleForeman        UserRole = "foreman"
-	RoleProjectManager UserRole = "project_manager"
-	RoleClerk          UserRole = "clerk"
-	RoleEngineer       UserRole = "engineer"
-	RoleDirector       UserRole = "director"
+	RoleRegular        UserRole = "REGULAR"
+	RoleForeman        UserRole = "FOREMAN"
+	RoleProjectManager UserRole = "PROJECT_MANAGER"
+	RoleClerk          UserRole = "CLERK"
+	RoleEngineer       UserRole = "ENGINEER"
+	RoleDirector       UserRole = "DIRECTOR"
 )
-
-func (ct *UserRole) Scan(value any) error {
-	*ct = UserRole(value.([]byte))
-	return nil
-}
-
-func (ct UserRole) Value() (driver.Value, error) {
-	return string(ct), nil
-}
 
 type User struct {
 	ID uuid.UUID `gorm:"primaryKey;type:uuid" json:"id"`
 
-	Email        *string  `gorm:"unique" json:"email"`
+	Email        *string  `gorm:"unique;uniqueIndex" json:"email"`
 	PasswordHash *string  `gorm:"column:password" json:"password_hash"`
-	Role         UserRole `gorm:"type:user_role" json:"role"`
+	Role         UserRole `gorm:"not null" json:"role"`
 
 	Token []Token `gorm:"foreignKey:UserID" json:"tokens"`
 

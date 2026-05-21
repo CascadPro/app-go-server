@@ -4,18 +4,18 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gin-gonic/gin"
-
 	"cascade/config"
 	"cascade/internal/models"
 	"cascade/pkg/filter"
 	"cascade/pkg/logger"
 	"cascade/pkg/utils"
+
+	"github.com/gin-gonic/gin"
 )
 
 type RegisterDto struct {
 	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required,min=8,max=64,alphanumeric"`
+	Password string `json:"password" binding:"required,min=8,max=64,alphanum"`
 	Token    string `json:"token" binding:"required,uuid"`
 }
 
@@ -29,8 +29,7 @@ func Register(c *gin.Context) {
 
 	var token models.Token
 
-	token_err := config.DB.Model(&models.Token{}).
-		Select("id", "user_id", "expires_at").
+	token_err := config.DB.Select("id", "user_id", "expires_at").
 		Where(&models.Token{Token: dto.Token, Type: models.TokenTypeRegister}).
 		First(&token).Error
 	if token_err != nil {
@@ -54,16 +53,18 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	user_err := config.DB.Model(&models.User{}).
-		Where("id = ?", token.UserID).
-		Updates(gin.H{"email": dto.Email, "password": password_hash}).Error
+	user_err := config.DB.
+		Model(&models.User{}).
+		Where(&models.User{ID: token.UserID}).
+		Update("email", dto.Email).
+		Update("password", password_hash).Error
 	if user_err != nil {
 		filter.Error(c, filter.ErrorParams{Status: http.StatusInternalServerError})
 		logger.Error("Can't update User model!", user_err)
 		return
 	}
 
-	delete_err := config.DB.Model(&models.Token{}).Delete(gin.H{"id": token.ID}).Error
+	delete_err := config.DB.Delete(&token).Error
 	if delete_err != nil {
 		filter.Error(c, filter.ErrorParams{Status: http.StatusInternalServerError})
 		logger.Error("Can't delete register token!", delete_err)
