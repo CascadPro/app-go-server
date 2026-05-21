@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -9,6 +8,7 @@ import (
 
 	"cascade/config"
 	"cascade/internal/models"
+	"cascade/pkg/filter"
 )
 
 func GenerateRegisterToken(c *gin.Context) {
@@ -24,10 +24,10 @@ func GenerateRegisterToken(c *gin.Context) {
 		Token:     uuid.NewString(),
 		Type:      models.TokenTypeRegister,
 		UserID:    user.ID,
-		ExpiresAt: time.Now().Add(time.Hour * 12),
+		ExpiresAt: time.Now().UTC().Add(time.Hour * 12),
 	}
 
 	config.DB.Model(&models.Token{}).Create(&token)
 
-	c.JSON(http.StatusOK, gin.H{"message": "Token successfully generated!", "token": token.Token})
+	filter.Success(c, "Ключ успешно сгенерирован!", gin.H{"token": token.Token})
 }

@@ -6,7 +6,6 @@ import (
 	"github.com/mattn/go-colorable"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-
 )
 
 func InitLogger() {
