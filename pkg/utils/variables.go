@@ -11,6 +11,7 @@ import (
 )
 
 type Config struct {
+	Domain          string
 	ApplicationPort int
 	ApplicationUrl  string
 	AllowedOrigins  []string
@@ -24,6 +25,8 @@ type Config struct {
 	RedisPassword string
 	RedisHost     string
 	RedisPort     int
+
+	JwtSecretKey string
 }
 
 func LoadConfig() (*Config, error) {
@@ -46,10 +49,11 @@ func LoadConfig() (*Config, error) {
 		return nil, err
 	}
 
-	allowedOrigins := getEnv("ALLOWED_ORIGINS", "")
+	allowedOrigins := os.ExpandEnv(getEnv("ALLOWED_ORIGINS", ""))
 	allowedOriginsList := strings.Split(allowedOrigins, ",")
 
 	config := &Config{
+		Domain:          getEnv("DOMAIN", "localhost"),
 		ApplicationPort: applicationPort,
 		ApplicationUrl:  os.ExpandEnv(getEnv("APPLICATION_URL", "")),
 		AllowedOrigins:  allowedOriginsList,
@@ -63,6 +67,8 @@ func LoadConfig() (*Config, error) {
 		RedisPassword: getEnv("REDIS_PASSWORD", ""),
 		RedisHost:     getEnv("REDIS_HOST", ""),
 		RedisPort:     redisPort,
+
+		JwtSecretKey: getEnv("JWT_SECRET_KEY", ""),
 	}
 
 	return config, nil

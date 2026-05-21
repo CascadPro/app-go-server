@@ -8,7 +8,6 @@ import (
 	"cascade/internal/models"
 	"cascade/pkg/filter"
 	"cascade/pkg/logger"
-	"cascade/pkg/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -46,18 +45,14 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	password_hash, hash_err := utils.GenerateHash(dto.Password)
-	if hash_err != nil {
-		filter.Error(c, filter.ErrorParams{Status: http.StatusInternalServerError})
-		logger.Error("Error while generating hash string!", hash_err)
-		return
-	}
+	user := models.User{PasswordHash: &dto.Password}
+	user.HashPassword()
 
 	user_err := config.DB.
 		Model(&models.User{}).
 		Where(&models.User{ID: token.UserID}).
 		Update("email", dto.Email).
-		Update("password", password_hash).Error
+		Update("password", user.PasswordHash).Error
 	if user_err != nil {
 		filter.Error(c, filter.ErrorParams{Status: http.StatusInternalServerError})
 		logger.Error("Can't update User model!", user_err)
