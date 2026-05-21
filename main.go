@@ -40,6 +40,7 @@ func main() {
 		r_auth := router.Group("/auth")
 		r_auth.GET("/token", auth.GenerateRegisterToken)
 		r_auth.POST("/register", auth.Register)
+		r_auth.POST("/login", auth.Login)
 	}
 
 	address := ":" + strconv.Itoa(cfg.ApplicationPort)
