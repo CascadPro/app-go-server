@@ -20,8 +20,8 @@ type Token struct {
 	Type  TokenType `gorm:"type:string;not null" json:"type"`
 
 	User   User      `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
-	UserID uuid.UUID `gorm:"type:uuid;uniqueIndex:idx_user_token;not null" json:"user_id"`
+	UserID uuid.UUID `gorm:"type:uuid;uniqueIndex:idx_user_token;not null" json:"user_id,omitempty"`
 
 	ExpiresAt time.Time `json:"expires_at"`
-	CreatedAt time.Time `gorm:"default:current_timestamp" json:"created_at"`
+	CreatedAt time.Time `gorm:"default:current_timestamp" json:"created_at,omitempty"`
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"cascade/config"
+	"cascade/internal/handlers/account"
 	"cascade/internal/handlers/auth"
 	"cascade/internal/middlewares"
 	"cascade/internal/models"
@@ -57,6 +58,22 @@ func main() {
 		r_auth.POST("/register", auth.Register)
 		r_auth.GET("/register/token", middlewares.AuthMiddleware(models.RoleAdmin, models.RoleDirector),
 			auth.GenerateRegisterToken)
+	}
+
+	// Account group
+	accountRaLm := middlewares.NewRateLimiter(middlewares.RateLimiterConfig{
+		RedisClient: config.Redis,
+		Limit:       10,          // 5 запросов
+		Window:      time.Minute, // в минуту
+		KeyPrefix:   "account",   // префикс для ключей
+	})
+
+	{
+		r_acc := router.Group("/account")
+		r_acc.Use(accountRaLm.Middleware())
+		r_acc.Use(middlewares.AuthMiddleware())
+
+		r_acc.GET("/my", account.GetMyAccount)
 	}
 
 	address := ":" + strconv.Itoa(cfg.ApplicationPort)
