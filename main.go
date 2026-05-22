@@ -31,7 +31,7 @@ func main() {
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 
-	router.GET("/ping", func(c *gin.Context) {
+	router.GET("/ping", middlewares.AuthMiddleware(), func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "pong",
 			"ms":      c.GetTime("").Nanosecond(),

@@ -38,6 +38,7 @@ func GetNewTokens(c *gin.Context) {
 			Status:  http.StatusInternalServerError,
 			Message: "Something went wrong!",
 			Cause:   err.Error()})
+		return
 	}
 
 	rt, v_err := authutils.ValidateToken(rt_s, cfg)
@@ -46,6 +47,7 @@ func GetNewTokens(c *gin.Context) {
 			Status:  http.StatusUnauthorized,
 			Message: "Ошибка во время валидации ключа!",
 			Cause:   v_err.Error()})
+		return
 	}
 
 	_, s_err := authutils.GetSessionByID(rt.SessionID)
@@ -57,7 +59,7 @@ func GetNewTokens(c *gin.Context) {
 		}
 	}
 
-	new_rt, new_at := authutils.IssueTokens(rt.UserID, rt.Role, rt.SessionID, cfg)
+	new_at, new_rt := authutils.IssueTokens(rt.UserID, rt.Role, rt.SessionID, cfg)
 
 	c.SetCookie("refresh_token", new_rt, int(authutils.RefreshTokenLifetime), "/", cfg.Domain, false, true)
 
