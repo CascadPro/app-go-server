@@ -1,4 +1,4 @@
-package auth
+package authutils
 
 import (
 	"crypto/rand"
@@ -18,8 +18,9 @@ type Session struct {
 }
 
 const (
-	RedisSessionFolder string = "cascade__session:"
-	RedisCacheFolder   string = "cascade__cache:"
+	RedisSessionFolder   string = "cascade__session:"
+	RedisCacheFolder     string = "cascade__cache:"
+	RedisRateLimitFolder string = "cascade__rate_limit:"
 )
 
 func GenerateSessionID() (string, error) {

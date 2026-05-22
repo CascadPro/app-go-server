@@ -6,7 +6,7 @@ import (
 	"cascade/internal/models"
 	"cascade/pkg/filter"
 	"cascade/pkg/utils"
-	"cascade/pkg/utils/auth"
+	"cascade/pkg/utils/authutils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -38,7 +38,7 @@ func GetNewTokens(c *gin.Context) {
 		return
 	}
 
-	rt, v_err := auth.ValidateToken(rt_s, cfg)
+	rt, v_err := authutils.ValidateToken(rt_s, cfg)
 	if v_err != nil {
 		filter.Error(c, filter.ErrorParams{
 			Status:  http.StatusUnauthorized,
@@ -47,7 +47,7 @@ func GetNewTokens(c *gin.Context) {
 		return
 	}
 
-	_, s_err := auth.GetSessionByID(rt.SessionID)
+	_, s_err := authutils.GetSessionByID(rt.SessionID)
 	if s_err != nil {
 		if s_err == redis.Nil {
 			filter.Error(c, filter.ErrorParams{Status: http.StatusUnauthorized, Message: "Сессия не обнаружена!"})
@@ -57,9 +57,9 @@ func GetNewTokens(c *gin.Context) {
 		return
 	}
 
-	new_rt, new_at := auth.IssueTokens(rt.UserID, rt.Role, rt.SessionID, cfg)
+	new_rt, new_at := authutils.IssueTokens(rt.UserID, rt.Role, rt.SessionID, cfg)
 
-	c.SetCookie("refresh_token", new_rt, int(auth.RefreshTokenLifetime), "/", cfg.Domain, false, true)
+	c.SetCookie("refresh_token", new_rt, int(authutils.RefreshTokenLifetime), "/", cfg.Domain, false, true)
 
 	filter.Success(c, "", gin.H{"access_token": new_at})
 }

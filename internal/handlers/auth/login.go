@@ -8,7 +8,7 @@ import (
 	"cascade/pkg/filter"
 	"cascade/pkg/logger"
 	"cascade/pkg/utils"
-	"cascade/pkg/utils/auth"
+	"cascade/pkg/utils/authutils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -49,20 +49,20 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	sessionID, err := auth.GenerateSessionID()
+	sessionID, err := authutils.GenerateSessionID()
 	if err != nil {
 		logger.Error("Error during generating session ID!", err)
 		return
 	}
 
-	if err := auth.CreateSession(sessionID, user.ID, auth.RefreshTokenLifetime); err != nil {
+	if err := authutils.CreateSession(sessionID, user.ID, authutils.RefreshTokenLifetime); err != nil {
 		logger.Error("Error during creating session!", err)
 		return
 	}
 
-	accessToken, refreshToken := auth.IssueTokens(user.ID, user.Role, sessionID, cfg)
+	accessToken, refreshToken := authutils.IssueTokens(user.ID, user.Role, sessionID, cfg)
 
-	c.SetCookie("refresh_token", refreshToken, int(auth.RefreshTokenLifetime), "/", cfg.Domain, false, true)
+	c.SetCookie("refresh_token", refreshToken, int(authutils.RefreshTokenLifetime), "/", cfg.Domain, false, true)
 
 	filter.Success(c, "Вы успешно вошли в аккаунт!", gin.H{"access_token": accessToken})
 }
