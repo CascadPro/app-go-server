@@ -19,7 +19,6 @@ func main() {
 
 	cfg, err := utils.LoadConfig()
 	if err != nil {
-		logger.Error("❌ Failed to load config", err)
 		return
 	}
 

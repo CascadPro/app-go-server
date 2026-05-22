@@ -32,7 +32,7 @@ func Success(c *gin.Context, message string, additional ...gin.H) {
 type ErrorParams struct {
 	Status  int
 	Message string
-	Cause   *string
+	Cause   string
 }
 
 func Error(c *gin.Context, p ErrorParams) {
@@ -46,7 +46,7 @@ func Error(c *gin.Context, p ErrorParams) {
 		Status:    p.Status,
 		Message:   message,
 		Timestamp: time.Now().UTC().Format(time.RFC3339Nano),
-		Cause:     p.Cause,
+		Cause:     &p.Cause,
 	}
 
 	c.JSON(p.Status, body)

@@ -22,16 +22,16 @@ func Register(c *gin.Context) {
 	var dto RegisterDto
 	if err := c.ShouldBind(&dto); err != nil {
 		cause := err.Error()
-		filter.Error(c, filter.ErrorParams{Status: http.StatusBadRequest, Message: "", Cause: &cause})
+		filter.Error(c, filter.ErrorParams{Status: http.StatusBadRequest, Message: "Неверно введены значения!", Cause: cause})
 		return
 	}
 
 	var token models.Token
 
-	token_err := config.DB.Select("id", "user_id", "expires_at").
+	err := config.DB.Select("id", "user_id", "expires_at").
 		Where(&models.Token{Token: dto.Token, Type: models.TokenTypeRegister}).
 		First(&token).Error
-	if token_err != nil {
+	if err != nil {
 		filter.Error(c, filter.ErrorParams{
 			Status:  http.StatusBadRequest,
 			Message: "Ключ неверный! Пожалуйста, запросите другой ключ"})

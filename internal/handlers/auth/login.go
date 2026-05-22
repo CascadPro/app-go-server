@@ -21,18 +21,17 @@ type LoginDto struct {
 func Login(c *gin.Context) {
 	var dto LoginDto
 	if err := c.ShouldBind(&dto); err != nil {
-		cause := err.Error()
-		filter.Error(c, filter.ErrorParams{Status: http.StatusBadRequest, Message: "", Cause: &cause})
+		filter.Error(c, filter.ErrorParams{Status: http.StatusBadRequest, Message: "Неверно введены значения!", Cause: err.Error()})
 		return
 	}
 
 	var user models.User
 
-	user_err := config.DB.Select("id", "role", "password").
+	err := config.DB.Select("id", "role", "password").
 		Where(&models.User{Email: &dto.Email}).
 		First(&user).Error
 
-	if user_err != nil {
+	if err != nil {
 		filter.Error(c, filter.ErrorParams{
 			Status:  http.StatusBadRequest,
 			Message: "Пользователя с такой эл. почтой не существует!"})
@@ -46,13 +45,13 @@ func Login(c *gin.Context) {
 
 	cfg, err := utils.LoadConfig()
 	if err != nil {
-		logger.Error("❌ Failed to load config", err)
+		filter.Error(c, filter.ErrorParams{Status: http.StatusInternalServerError, Message: "Something went wrong!", Cause: err.Error()})
 		return
 	}
 
-	sessionID, session_err := auth.GenerateSessionID()
-	if session_err != nil {
-		logger.Error("Error during generating session ID!", session_err)
+	sessionID, err := auth.GenerateSessionID()
+	if err != nil {
+		logger.Error("Error during generating session ID!", err)
 		return
 	}
 
