@@ -11,12 +11,13 @@ import (
 type UserRole string
 
 const (
-	RoleRegular        UserRole = "REGULAR"
 	RoleForeman        UserRole = "FOREMAN"
 	RoleProjectManager UserRole = "PROJECT_MANAGER"
 	RoleClerk          UserRole = "CLERK"
 	RoleEngineer       UserRole = "ENGINEER"
 	RoleDirector       UserRole = "DIRECTOR"
+	RoleRegular        UserRole = "REGULAR"
+	RoleAdmin          UserRole = "ADMIN"
 )
 
 type User struct {
