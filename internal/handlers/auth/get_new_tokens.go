@@ -34,8 +34,10 @@ func GetNewTokens(c *gin.Context) {
 
 	cfg, err := utils.LoadConfig()
 	if err != nil {
-		filter.Error(c, filter.ErrorParams{Status: http.StatusInternalServerError, Message: "Something went wrong!", Cause: err.Error()})
-		return
+		filter.Error(c, filter.ErrorParams{
+			Status:  http.StatusInternalServerError,
+			Message: "Something went wrong!",
+			Cause:   err.Error()})
 	}
 
 	rt, v_err := authutils.ValidateToken(rt_s, cfg)
@@ -44,7 +46,6 @@ func GetNewTokens(c *gin.Context) {
 			Status:  http.StatusUnauthorized,
 			Message: "Ошибка во время валидации ключа!",
 			Cause:   v_err.Error()})
-		return
 	}
 
 	_, s_err := authutils.GetSessionByID(rt.SessionID)
@@ -54,7 +55,6 @@ func GetNewTokens(c *gin.Context) {
 		} else {
 			filter.Error(c, filter.ErrorParams{Status: http.StatusBadRequest, Message: "Something went wrong!"})
 		}
-		return
 	}
 
 	new_rt, new_at := authutils.IssueTokens(rt.UserID, rt.Role, rt.SessionID, cfg)

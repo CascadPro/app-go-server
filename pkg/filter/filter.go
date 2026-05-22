@@ -49,5 +49,5 @@ func Error(c *gin.Context, p ErrorParams) {
 		Cause:     &p.Cause,
 	}
 
-	c.JSON(p.Status, body)
+	c.AbortWithStatusJSON(p.Status, body)
 }

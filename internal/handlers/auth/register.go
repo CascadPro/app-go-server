@@ -21,9 +21,10 @@ type RegisterDto struct {
 func Register(c *gin.Context) {
 	var dto RegisterDto
 	if err := c.ShouldBind(&dto); err != nil {
-		cause := err.Error()
-		filter.Error(c, filter.ErrorParams{Status: http.StatusBadRequest, Message: "Неверно введены значения!", Cause: cause})
-		return
+		filter.Error(c, filter.ErrorParams{
+			Status:  http.StatusBadRequest,
+			Message: "Неверно введены значения!",
+			Cause:   err.Error()})
 	}
 
 	var token models.Token
@@ -35,14 +36,12 @@ func Register(c *gin.Context) {
 		filter.Error(c, filter.ErrorParams{
 			Status:  http.StatusBadRequest,
 			Message: "Ключ неверный! Пожалуйста, запросите другой ключ"})
-		return
 	}
 
 	if token.ExpiresAt.Before(time.Now()) {
 		filter.Error(c, filter.ErrorParams{
 			Status:  http.StatusBadRequest,
 			Message: "Срок действия ключа истек! Пожалуйста, запросите новый ключ"})
-		return
 	}
 
 	user := models.User{PasswordHash: &dto.Password}
@@ -54,16 +53,14 @@ func Register(c *gin.Context) {
 		Update("email", dto.Email).
 		Update("password", user.PasswordHash).Error
 	if user_err != nil {
-		filter.Error(c, filter.ErrorParams{Status: http.StatusInternalServerError})
 		logger.Error("Can't update User model!", user_err)
-		return
+		filter.Error(c, filter.ErrorParams{Status: http.StatusInternalServerError})
 	}
 
 	delete_err := config.DB.Delete(&token).Error
 	if delete_err != nil {
-		filter.Error(c, filter.ErrorParams{Status: http.StatusInternalServerError})
 		logger.Error("Can't delete register token!", delete_err)
-		return
+		filter.Error(c, filter.ErrorParams{Status: http.StatusInternalServerError})
 	}
 
 	filter.Success(c, "Вы успешно зарегистрировались!")
