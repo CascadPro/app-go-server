@@ -33,6 +33,24 @@ func GenerateSessionID() (string, error) {
 	return hex.EncodeToString(bytes), nil
 }
 
+func GetSessionByID(sessionID string) (Session, error) {
+	var session Session
+
+	sessionString, query_err := config.Redis.Get(config.RedisCtx, RedisSessionFolder+sessionID).Result()
+	if query_err != nil {
+		logger.Error("❌ Error during Redis session folder query!", query_err)
+		return session, query_err
+	}
+
+	decode_err := json.Unmarshal([]byte(sessionString), &session)
+	if decode_err != nil {
+		logger.Error("❌ Error during Redis session string decoding!", decode_err)
+		return session, decode_err
+	}
+
+	return session, nil
+}
+
 func CreateSession(sessionID string, userID uuid.UUID, ttl time.Duration) error {
 	session := Session{
 		UserID:    userID,

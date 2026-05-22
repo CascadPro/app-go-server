@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"time"
 
 	"cascade/internal/models"
@@ -10,6 +11,15 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
+
+type TokenPayload struct {
+	UserID    uuid.UUID       `json:"user_id"`
+	Role      models.UserRole `json:"role"`
+	SessionID string          `json:"session_id"`
+	ExpiresAt int64           `json:"exp"`
+
+	jwt.RegisteredClaims
+}
 
 const (
 	RefreshTokenLifetime time.Duration = time.Hour * 24 * 30
@@ -25,6 +35,35 @@ func GenerateToken(method jwt.SigningMethod, claims jwt.Claims, cfg *utils.Confi
 	}
 
 	return tokenString, nil
+}
+
+func ValidateToken(tokenString string, cfg *utils.Config) (*TokenPayload, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &TokenPayload{}, func(t *jwt.Token) (any, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Неожиданный метод подписи: %v", t.Header["alg"])
+		}
+
+		return []byte(cfg.JwtSecretKey), nil
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("Не удалось обработать ключ")
+	}
+
+	if token == nil || !token.Valid {
+		return nil, fmt.Errorf("Ключ невалиден")
+	}
+
+	claims, ok := token.Claims.(*TokenPayload)
+	if !ok {
+		return nil, fmt.Errorf("Не удалось получить payload")
+	}
+
+	if time.Unix(claims.ExpiresAt, 0).Before(time.Now()) {
+		return nil, fmt.Errorf("Срок действия ключа закончился")
+	}
+
+	return claims, nil
 }
 
 func IssueTokens(userID uuid.UUID, role models.UserRole, sessionID string, cfg *utils.Config) (string, string) {
