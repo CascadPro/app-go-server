@@ -3,11 +3,13 @@ package main
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
 	"cascade/config"
 	"cascade/internal/handlers/auth"
+	"cascade/internal/middlewares"
 	"cascade/pkg/logger"
 	"cascade/pkg/utils"
 )
@@ -32,11 +34,22 @@ func main() {
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "pong",
+			"ms":      c.GetTime("").Nanosecond(),
 		})
+	})
+
+	// Auth group
+	authRaLm := middlewares.NewRateLimiter(middlewares.RateLimiterConfig{
+		RedisClient: config.Redis,
+		Limit:       5,                // 10 запросов
+		Window:      time.Minute * 15, // в минуту
+		KeyPrefix:   "auth",           // префикс для ключей
 	})
 
 	{
 		r_auth := router.Group("/auth")
+		r_auth.Use(authRaLm.Middleware())
+
 		r_auth.GET("/token", auth.GenerateRegisterToken)
 		r_auth.GET("/login/refresh", auth.GetNewTokens)
 		r_auth.POST("/register", auth.Register)
