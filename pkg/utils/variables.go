@@ -11,6 +11,7 @@ import (
 )
 
 type Config struct {
+	Domain          string
 	ApplicationPort int
 	ApplicationUrl  string
 	AllowedOrigins  []string
@@ -20,6 +21,12 @@ type Config struct {
 	PostgresHost     string
 	PostgresPort     int
 	PostgresDatabase string
+
+	RedisPassword string
+	RedisHost     string
+	RedisPort     int
+
+	JwtSecretKey string
 }
 
 func LoadConfig() (*Config, error) {
@@ -29,18 +36,27 @@ func LoadConfig() (*Config, error) {
 
 	applicationPort, err := strconv.Atoi(getEnv("APPLICATION_PORT", "4000"))
 	if err != nil {
+		logger.Error("❌ Failed to load config", err)
 		return nil, err
 	}
 
 	postgresPort, err := strconv.Atoi(getEnv("POSTGRES_PORT", "5433"))
 	if err != nil {
+		logger.Error("❌ Failed to load config", err)
 		return nil, err
 	}
 
-	allowedOrigins := getEnv("ALLOWED_ORIGINS", "")
+	redisPort, err := strconv.Atoi(getEnv("REDIS_PORT", "6379"))
+	if err != nil {
+		logger.Error("❌ Failed to load config", err)
+		return nil, err
+	}
+
+	allowedOrigins := os.ExpandEnv(getEnv("ALLOWED_ORIGINS", ""))
 	allowedOriginsList := strings.Split(allowedOrigins, ",")
 
 	config := &Config{
+		Domain:          getEnv("DOMAIN", "localhost"),
 		ApplicationPort: applicationPort,
 		ApplicationUrl:  os.ExpandEnv(getEnv("APPLICATION_URL", "")),
 		AllowedOrigins:  allowedOriginsList,
@@ -50,6 +66,12 @@ func LoadConfig() (*Config, error) {
 		PostgresHost:     getEnv("POSTGRES_HOST", ""),
 		PostgresPort:     postgresPort,
 		PostgresDatabase: getEnv("POSTGRES_DATABASE", ""),
+
+		RedisPassword: getEnv("REDIS_PASSWORD", ""),
+		RedisHost:     getEnv("REDIS_HOST", ""),
+		RedisPort:     redisPort,
+
+		JwtSecretKey: getEnv("JWT_SECRET_KEY", ""),
 	}
 
 	return config, nil

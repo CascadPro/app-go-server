@@ -1,0 +1,67 @@
+package authutils
+
+import (
+	"crypto/rand"
+	"encoding/hex"
+	"encoding/json"
+	"time"
+
+	"cascade/config"
+	"cascade/pkg/logger"
+
+	"github.com/google/uuid"
+)
+
+type Session struct {
+	UserID    uuid.UUID `json:"user_id"`
+	ExpiresAt int64     `json:"expires_at"`
+}
+
+const (
+	RedisSessionFolder   string = "cascade__session:"
+	RedisCacheFolder     string = "cascade__cache:"
+	RedisRateLimitFolder string = "cascade__rate_limit:"
+)
+
+func GenerateSessionID() (string, error) {
+	bytes := make([]byte, 32)
+
+	_, err := rand.Read(bytes)
+	if err != nil {
+		return "", err
+	}
+
+	return hex.EncodeToString(bytes), nil
+}
+
+func GetSessionByID(sessionID string) (Session, error) {
+	var session Session
+
+	sessionString, query_err := config.Redis.Get(config.RedisCtx, RedisSessionFolder+sessionID).Result()
+	if query_err != nil {
+		logger.Error("❌ Error during Redis session folder query!", query_err)
+		return session, query_err
+	}
+
+	decode_err := json.Unmarshal([]byte(sessionString), &session)
+	if decode_err != nil {
+		logger.Error("❌ Error during Redis session string decoding!", decode_err)
+		return session, decode_err
+	}
+
+	return session, nil
+}
+
+func CreateSession(sessionID string, userID uuid.UUID, ttl time.Duration) error {
+	session := Session{
+		UserID:    userID,
+		ExpiresAt: time.Now().Add(ttl).Unix(),
+	}
+
+	jsonString, err := json.Marshal(session)
+	if err != nil {
+		logger.Error("Error during JSON encoding!", err)
+	}
+
+	return config.Redis.Set(config.RedisCtx, RedisSessionFolder+sessionID, jsonString, ttl).Err()
+}

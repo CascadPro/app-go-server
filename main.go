@@ -3,12 +3,16 @@ package main
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
+	"cascade/config"
+	"cascade/internal/handlers/auth"
+	"cascade/internal/middlewares"
+	"cascade/internal/models"
 	"cascade/pkg/logger"
 	"cascade/pkg/utils"
-
 )
 
 func main() {
@@ -18,21 +22,42 @@ func main() {
 
 	cfg, err := utils.LoadConfig()
 	if err != nil {
-		logger.Error("❌ Failed to load config", err)
 		return
 	}
+
+	config.ConnectPgDatabase(cfg)
+	config.ConnectRedisDatabase(cfg)
 
 	router := gin.New()
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 
-	// Define a simple GET endpoint
 	router.GET("/ping", func(c *gin.Context) {
-		// Return JSON response
 		c.JSON(http.StatusOK, gin.H{
 			"message": "pong",
+			"ms":      c.GetTime("").Nanosecond(),
 		})
 	})
+
+	// Auth group
+	authRaLm := middlewares.NewRateLimiter(middlewares.RateLimiterConfig{
+		RedisClient: config.Redis,
+		Limit:       5,                // 5 запросов
+		Window:      time.Minute * 15, // в минуту
+		KeyPrefix:   "auth",           // префикс для ключей
+	})
+
+	{
+		r_auth := router.Group("/auth")
+		r_auth.Use(authRaLm.Middleware())
+
+		r_auth.POST("/login", auth.Login)
+		r_auth.GET("/login/refresh", auth.GetNewTokens)
+
+		r_auth.POST("/register", auth.Register)
+		r_auth.GET("/register/token", middlewares.AuthMiddleware(models.RoleAdmin, models.RoleDirector),
+			auth.GenerateRegisterToken)
+	}
 
 	address := ":" + strconv.Itoa(cfg.ApplicationPort)
 
