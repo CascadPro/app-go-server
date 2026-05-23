@@ -8,23 +8,26 @@ import (
 
 	"cascade/pkg/logger"
 	"cascade/pkg/utils"
-
 )
 
-var Redis *redis.Client
-var RedisCtx context.Context
+type redis_db struct {
+	DB  *redis.Client
+	Ctx context.Context
+}
+
+var R redis_db
 
 func ConnectRedisDatabase(cfg *utils.Config) {
-	Redis = redis.NewClient(&redis.Options{
+	R.DB = redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%d", cfg.RedisHost, cfg.RedisPort),
 		Password: cfg.RedisPassword,
 		DB:       0,
 		Protocol: 2,
 	})
 
-	RedisCtx = context.Background()
+	R.Ctx = context.Background()
 
-	Redis.ClusterAddSlots(RedisCtx, 1)
+	R.DB.ClusterAddSlots(R.Ctx, 1)
 
 	logger.Info("✅ Redis database connection established successfully")
 }

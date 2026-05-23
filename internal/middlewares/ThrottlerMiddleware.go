@@ -97,7 +97,7 @@ func (rl *RateLimiter) isAllowed(key string) (bool, int64, int64, error) {
 		return {1, limit - new_count, ttl}
 	`
 
-	result, err := rl.config.RedisClient.Eval(config.RedisCtx, luaScript, []string{key},
+	result, err := rl.config.RedisClient.Eval(config.R.Ctx, luaScript, []string{key},
 		rl.config.Limit, int64(rl.config.Window.Seconds())).Result()
 
 	if err != nil {

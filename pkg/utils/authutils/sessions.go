@@ -37,7 +37,7 @@ func GenerateSessionID() (string, error) {
 func GetSessionByID(sessionID string) (Session, error) {
 	var session Session
 
-	sessionString, query_err := config.Redis.Get(config.RedisCtx, RedisSessionFolder+sessionID).Result()
+	sessionString, query_err := config.R.DB.Get(config.R.Ctx, RedisSessionFolder+sessionID).Result()
 	if query_err != nil {
 		logger.Error("❌ Error during Redis session folder query!", query_err)
 		return session, query_err
@@ -63,5 +63,5 @@ func CreateSession(sessionID string, userID uuid.UUID, ttl time.Duration) error 
 		logger.Error("Error during JSON encoding!", err)
 	}
 
-	return config.Redis.Set(config.RedisCtx, RedisSessionFolder+sessionID, jsonString, ttl).Err()
+	return config.R.DB.Set(config.R.Ctx, RedisSessionFolder+sessionID, jsonString, ttl).Err()
 }

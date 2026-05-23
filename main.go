@@ -42,7 +42,7 @@ func main() {
 
 	// Auth group
 	authRaLm := middlewares.NewRateLimiter(middlewares.RateLimiterConfig{
-		RedisClient: config.Redis,
+		RedisClient: config.R.DB,
 		Limit:       5,                // 5 запросов
 		Window:      time.Minute * 15, // в минуту
 		KeyPrefix:   "auth",           // префикс для ключей
@@ -62,7 +62,7 @@ func main() {
 
 	// Account group
 	accountRaLm := middlewares.NewRateLimiter(middlewares.RateLimiterConfig{
-		RedisClient: config.Redis,
+		RedisClient: config.R.DB,
 		Limit:       10,          // 5 запросов
 		Window:      time.Minute, // в минуту
 		KeyPrefix:   "account",   // префикс для ключей
