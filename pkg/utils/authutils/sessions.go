@@ -65,3 +65,13 @@ func CreateSession(sessionID string, userID uuid.UUID, ttl time.Duration) error 
 
 	return config.R.DB.Set(config.R.Ctx, RedisSessionFolder+sessionID, jsonString, ttl).Err()
 }
+
+func DeleteSession(sessionIDs ...string) error {
+	var keys []string
+
+	for _, id := range sessionIDs {
+		keys = append(keys, RedisSessionFolder+id)
+	}
+
+	return config.R.DB.Del(config.R.Ctx, keys...).Err()
+}

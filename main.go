@@ -54,6 +54,7 @@ func main() {
 
 		r_auth.POST("/login", auth.Login)
 		r_auth.GET("/login/refresh", auth.GetNewTokens)
+		r_auth.POST("/logout", middlewares.AuthMiddleware(), auth.Logout)
 
 		r_auth.POST("/register", auth.Register)
 		r_auth.GET("/register/token", middlewares.AuthMiddleware(models.RoleAdmin, models.RoleDirector),
