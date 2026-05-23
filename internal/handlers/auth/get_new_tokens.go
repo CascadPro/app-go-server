@@ -2,6 +2,7 @@ package auth
 
 import (
 	"net/http"
+	"time"
 
 	"cascade/internal/models"
 	"cascade/pkg/filter"
@@ -43,6 +44,8 @@ func GetNewTokens(c *gin.Context) {
 
 	rt, v_err := authutils.ValidateToken(rt_s, cfg)
 	if v_err != nil {
+		c.SetCookie("refresh_token", "", -1, "/", "", false, false)
+
 		filter.Error(c, filter.ErrorParams{
 			Status:  http.StatusUnauthorized,
 			Message: "Ошибка во время валидации ключа!",
@@ -53,6 +56,8 @@ func GetNewTokens(c *gin.Context) {
 	_, s_err := authutils.GetSessionByID(rt.SessionID)
 	if s_err != nil {
 		if s_err == redis.Nil {
+			c.SetCookie("refresh_token", "", -1, "/", "", false, false)
+
 			filter.Error(c, filter.ErrorParams{Status: http.StatusUnauthorized, Message: "Сессия не обнаружена!"})
 		} else {
 			filter.Error(c, filter.ErrorParams{Status: http.StatusBadRequest, Message: "Something went wrong!"})
@@ -61,7 +66,14 @@ func GetNewTokens(c *gin.Context) {
 
 	new_at, new_rt := authutils.IssueTokens(rt.UserID, rt.Role, rt.SessionID, cfg)
 
-	c.SetCookie("refresh_token", new_rt, int(authutils.RefreshTokenLifetime), "/", cfg.Domain, false, true)
+	c.SetCookieData(&http.Cookie{
+		Name:     "refresh_token",
+		Value:    new_rt,
+		Domain:   cfg.Domain,
+		Secure:   false,
+		HttpOnly: true,
+		Expires:  time.Now().Add(authutils.RefreshTokenLifetime),
+	})
 
-	filter.Success(c, "", gin.H{"access_token": new_at})
+	filter.Success(c, "Ключи обновлены!", gin.H{"access_token": new_at})
 }

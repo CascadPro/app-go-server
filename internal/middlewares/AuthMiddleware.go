@@ -53,6 +53,8 @@ func AuthMiddleware(roles ...models.UserRole) gin.HandlerFunc {
 
 		c.Set("userID", parsedToken.UserID)
 		c.Set("role", parsedToken.Role)
+		c.Set("sessionID", parsedToken.SessionID)
+
 		c.Next()
 	}
 }

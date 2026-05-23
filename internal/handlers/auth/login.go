@@ -2,6 +2,7 @@ package auth
 
 import (
 	"net/http"
+	"time"
 
 	"cascade/config"
 	"cascade/internal/models"
@@ -64,7 +65,14 @@ func Login(c *gin.Context) {
 
 	accessToken, refreshToken := authutils.IssueTokens(user.ID, user.Role, sessionID, cfg)
 
-	c.SetCookie("refresh_token", refreshToken, int(authutils.RefreshTokenLifetime), "/", cfg.Domain, false, true)
+	c.SetCookieData(&http.Cookie{
+		Name:     "refresh_token",
+		Value:    refreshToken,
+		Domain:   cfg.Domain,
+		Secure:   false,
+		HttpOnly: true,
+		Expires:  time.Now().Add(authutils.RefreshTokenLifetime),
+	})
 
 	filter.Success(c, "Вы успешно вошли в аккаунт!", gin.H{"access_token": accessToken})
 }

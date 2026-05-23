@@ -47,7 +47,7 @@ func ValidateToken(tokenString string, cfg *utils.Config) (*TokenPayload, error)
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("Не удалось обработать ключ")
+		return nil, err
 	}
 
 	if token == nil || !token.Valid {
