@@ -54,6 +54,14 @@ func CreateSession(r *http.Request, sessionID string, userID uuid.UUID, ttl time
 		ExpiresAt: time.Now().Add(ttl).Unix(),
 	}
 
+	metadata, meta_err := getSessionMetadata(r, r.UserAgent())
+	if meta_err != nil {
+		logger.Error("Failed to get session metadata!", meta_err)
+		return meta_err
+	}
+
+	session.Metadata = *metadata
+
 	jsonString, err := json.Marshal(session)
 	if err != nil {
 		logger.Error("Error during JSON encoding!", err)
