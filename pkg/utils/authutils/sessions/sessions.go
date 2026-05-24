@@ -1,9 +1,10 @@
-package authutils
+package sessions
 
 import (
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
+	"net/http"
 	"time"
 
 	"cascade/config"
@@ -11,11 +12,6 @@ import (
 
 	"github.com/google/uuid"
 )
-
-type Session struct {
-	UserID    uuid.UUID `json:"user_id"`
-	ExpiresAt int64     `json:"expires_at"`
-}
 
 const (
 	RedisSessionFolder   string = "cascade__session:"
@@ -52,7 +48,7 @@ func GetSessionByID(sessionID string) (Session, error) {
 	return session, nil
 }
 
-func CreateSession(sessionID string, userID uuid.UUID, ttl time.Duration) error {
+func CreateSession(r *http.Request, sessionID string, userID uuid.UUID, ttl time.Duration) error {
 	session := Session{
 		UserID:    userID,
 		ExpiresAt: time.Now().Add(ttl).Unix(),
@@ -61,6 +57,7 @@ func CreateSession(sessionID string, userID uuid.UUID, ttl time.Duration) error 
 	jsonString, err := json.Marshal(session)
 	if err != nil {
 		logger.Error("Error during JSON encoding!", err)
+		return err
 	}
 
 	return config.R.DB.Set(config.R.Ctx, RedisSessionFolder+sessionID, jsonString, ttl).Err()

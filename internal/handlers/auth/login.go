@@ -10,6 +10,7 @@ import (
 	"cascade/pkg/logger"
 	"cascade/pkg/utils"
 	"cascade/pkg/utils/authutils"
+	"cascade/pkg/utils/authutils/sessions"
 
 	"github.com/gin-gonic/gin"
 )
@@ -52,13 +53,13 @@ func Login(c *gin.Context) {
 			Cause:   err.Error()})
 	}
 
-	sessionID, err := authutils.GenerateSessionID()
+	sessionID, err := sessions.GenerateSessionID()
 	if err != nil {
 		logger.Error("Error during generating session ID!", err)
 		return
 	}
 
-	if err := authutils.CreateSession(sessionID, user.ID, authutils.RefreshTokenLifetime); err != nil {
+	if err := sessions.CreateSession(c.Request, sessionID, user.ID, authutils.RefreshTokenLifetime); err != nil {
 		logger.Error("Error during creating session!", err)
 		return
 	}

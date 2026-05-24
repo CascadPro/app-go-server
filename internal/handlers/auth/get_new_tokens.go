@@ -8,6 +8,7 @@ import (
 	"cascade/pkg/filter"
 	"cascade/pkg/utils"
 	"cascade/pkg/utils/authutils"
+	"cascade/pkg/utils/authutils/sessions"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -53,7 +54,7 @@ func GetNewTokens(c *gin.Context) {
 		return
 	}
 
-	_, s_err := authutils.GetSessionByID(rt.SessionID)
+	_, s_err := sessions.GetSessionByID(rt.SessionID)
 	if s_err != nil {
 		if s_err == redis.Nil {
 			c.SetCookie("refresh_token", "", -1, "/", "", false, false)

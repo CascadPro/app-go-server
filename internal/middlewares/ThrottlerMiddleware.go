@@ -8,7 +8,7 @@ import (
 
 	"cascade/config"
 	"cascade/pkg/filter"
-	"cascade/pkg/utils/authutils"
+	"cascade/pkg/utils/authutils/sessions"
 
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
@@ -38,7 +38,7 @@ func (rl *RateLimiter) Middleware() gin.HandlerFunc {
 		// Можно также использовать user ID или другой идентификатор
 		// clientIP := c.GetHeader("X-Forwarded-For")
 
-		key := fmt.Sprintf("%s%s:%s", authutils.RedisRateLimitFolder, rl.config.KeyPrefix, clientIP)
+		key := fmt.Sprintf("%s%s:%s", sessions.RedisRateLimitFolder, rl.config.KeyPrefix, clientIP)
 
 		allowed, remaining, resetTime, err := rl.isAllowed(key)
 		if err != nil {
