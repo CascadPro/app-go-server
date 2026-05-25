@@ -40,6 +40,10 @@ func main() {
 		})
 	})
 
+	router.GET("/health", func(c *gin.Context) {
+		c.Status(http.StatusOK)
+	})
+
 	// Auth group
 	authRaLm := middlewares.NewRateLimiter(middlewares.RateLimiterConfig{
 		RedisClient: config.R.DB,

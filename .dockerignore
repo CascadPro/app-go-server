@@ -1,2 +1,7 @@
-.git
+.vscode/
+.git/
+tmp/
+
 *.log
+
+*.env
