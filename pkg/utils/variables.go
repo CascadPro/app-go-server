@@ -65,7 +65,7 @@ func LoadConfig() (*Config, error) {
 		PostgresPassword: getEnv("POSTGRES_PASSWORD", ""),
 		PostgresHost:     getEnv("POSTGRES_HOST", ""),
 		PostgresPort:     postgresPort,
-		PostgresDatabase: getEnv("POSTGRES_DATABASE", ""),
+		PostgresDatabase: getEnv("POSTGRES_DB", ""),
 
 		RedisPassword: getEnv("REDIS_PASSWORD", ""),
 		RedisHost:     getEnv("REDIS_HOST", ""),
