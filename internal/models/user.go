@@ -23,9 +23,9 @@ const (
 type User struct {
 	ID uuid.UUID `gorm:"primaryKey;type:uuid" json:"id"`
 
-	Email        *string  `gorm:"unique;uniqueIndex" json:"email"`
-	PasswordHash *string  `gorm:"column:password" json:"password_hash,omitempty"`
-	Role         UserRole `gorm:"not null" json:"role"`
+	Email        *string  `gorm:"type:varchar(255);unique;uniqueIndex" json:"email"`
+	PasswordHash *string  `gorm:"column:password;type:varchar(255)" json:"password_hash,omitempty"`
+	Role         UserRole `gorm:"type:varchar(255);not null" json:"role"`
 
 	Token []Token `gorm:"foreignKey:UserID" json:"tokens,omitempty"`
 
