@@ -49,6 +49,7 @@ func main() {
 
 		router.GET("/:tag/:id", media.Fetch)
 		router.POST("/upload", media.Upload)
+		router.DELETE("/:tag/:id", media.SoftDelete)
 	}
 
 	// Auth group

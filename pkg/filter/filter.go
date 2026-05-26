@@ -38,7 +38,7 @@ type ErrorParams struct {
 func Error(c *gin.Context, p ErrorParams) {
 	message := p.Message
 
-	if p.Status == http.StatusInternalServerError {
+	if p.Status == http.StatusInternalServerError && len(message) > 0 {
 		message = "Что-то пошло не так! Попробуйте позже"
 	}
 
