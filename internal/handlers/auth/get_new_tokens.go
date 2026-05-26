@@ -38,11 +38,7 @@ func GetNewTokens(c *gin.Context) {
 
 	cfg, err := utils.LoadConfig()
 	if err != nil {
-		filter.Error(c, filter.ErrorParams{
-			Status:  http.StatusInternalServerError,
-			Message: "Something went wrong!",
-			Cause:   err.Error(),
-		})
+		filter.Error(c, filter.ErrorParams{Status: http.StatusInternalServerError})
 		return
 	}
 
