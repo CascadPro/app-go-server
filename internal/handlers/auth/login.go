@@ -26,7 +26,9 @@ func Login(c *gin.Context) {
 		filter.Error(c, filter.ErrorParams{
 			Status:  http.StatusBadRequest,
 			Message: "Неверно введены значения!",
-			Cause:   err.Error()})
+			Cause:   err.Error(),
+		})
+		return
 	}
 
 	var user models.User
@@ -38,11 +40,14 @@ func Login(c *gin.Context) {
 	if err != nil {
 		filter.Error(c, filter.ErrorParams{
 			Status:  http.StatusBadRequest,
-			Message: "Пользователя с такой эл. почтой не существует!"})
+			Message: "Пользователя с такой эл. почтой не существует!",
+		})
+		return
 	}
 
 	if !user.CheckPassword(dto.Password) {
 		filter.Error(c, filter.ErrorParams{Status: http.StatusUnauthorized, Message: "Неверный пароль!"})
+		return
 	}
 
 	cfg, err := utils.LoadConfig()
@@ -50,7 +55,9 @@ func Login(c *gin.Context) {
 		filter.Error(c, filter.ErrorParams{
 			Status:  http.StatusInternalServerError,
 			Message: "Something went wrong!",
-			Cause:   err.Error()})
+			Cause:   err.Error(),
+		})
+		return
 	}
 
 	sessionID, err := sessions.GenerateSessionID()

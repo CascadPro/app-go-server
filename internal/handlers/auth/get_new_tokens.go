@@ -31,7 +31,9 @@ func GetNewTokens(c *gin.Context) {
 		filter.Error(c, filter.ErrorParams{
 			Status:  http.StatusUnauthorized,
 			Message: "Ключа для обновления не найдено или он просрочен! Авторизуйтесь снова",
-			Cause:   token_err.Error()})
+			Cause:   token_err.Error(),
+		})
+		return
 	}
 
 	cfg, err := utils.LoadConfig()
@@ -39,18 +41,19 @@ func GetNewTokens(c *gin.Context) {
 		filter.Error(c, filter.ErrorParams{
 			Status:  http.StatusInternalServerError,
 			Message: "Something went wrong!",
-			Cause:   err.Error()})
+			Cause:   err.Error(),
+		})
 		return
 	}
 
 	rt, v_err := authutils.ValidateToken(rt_s, cfg)
 	if v_err != nil {
 		c.SetCookie("refresh_token", "", -1, "/", "", false, false)
-
 		filter.Error(c, filter.ErrorParams{
 			Status:  http.StatusUnauthorized,
 			Message: "Ошибка во время валидации ключа!",
-			Cause:   v_err.Error()})
+			Cause:   v_err.Error(),
+		})
 		return
 	}
 
@@ -63,6 +66,7 @@ func GetNewTokens(c *gin.Context) {
 		} else {
 			filter.Error(c, filter.ErrorParams{Status: http.StatusBadRequest, Message: "Something went wrong!"})
 		}
+		return
 	}
 
 	new_at, new_rt := authutils.IssueTokens(rt.UserID, rt.Role, rt.SessionID, cfg)

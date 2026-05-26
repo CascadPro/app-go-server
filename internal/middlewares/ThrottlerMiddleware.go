@@ -45,7 +45,8 @@ func (rl *RateLimiter) Middleware() gin.HandlerFunc {
 			filter.Error(c, filter.ErrorParams{
 				Status:  http.StatusInternalServerError,
 				Message: "Rate limiter error!",
-				Cause:   err.Error()})
+				Cause:   err.Error(),
+			})
 			return
 		}
 
@@ -57,7 +58,8 @@ func (rl *RateLimiter) Middleware() gin.HandlerFunc {
 			filter.Error(c, filter.ErrorParams{
 				Status:  http.StatusTooManyRequests,
 				Message: "Too Many Requests",
-				Cause:   "Rate limit exceeded"})
+				Cause:   "Rate limit exceeded",
+			})
 			return
 		}
 
