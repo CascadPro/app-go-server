@@ -10,6 +10,7 @@ import (
 	"cascade/config"
 	"cascade/internal/handlers/account"
 	"cascade/internal/handlers/auth"
+	"cascade/internal/handlers/media"
 	"cascade/internal/middlewares"
 	"cascade/internal/models"
 	"cascade/pkg/logger"
@@ -47,6 +48,7 @@ func main() {
 		r.Use(middlewares.MediaCors(cfg))
 
 		router.GET("/:tag/:id", media.Fetch)
+		router.POST("/upload", media.Upload)
 	}
 
 	// Auth group

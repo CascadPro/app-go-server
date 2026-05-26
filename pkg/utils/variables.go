@@ -26,13 +26,15 @@ type Config struct {
 	RedisHost     string
 	RedisPort     int
 
-	JwtSecretKey string
+	JwtSecretKey    string
+	UploadSecretKey string
 
 	S3Region          string
 	S3Endpoint        string
 	S3BucketName      string
 	S3AccessKeyId     string
 	S3SecretAccessKey string
+	S3AllowedTags     string
 
 	UseS3 bool
 }
@@ -79,7 +81,8 @@ func LoadConfig() (*Config, error) {
 		RedisHost:     getEnv("REDIS_HOST", ""),
 		RedisPort:     redisPort,
 
-		JwtSecretKey: getEnv("JWT_SECRET_KEY", ""),
+		JwtSecretKey:    getEnv("JWT_SECRET_KEY", ""),
+		UploadSecretKey: getEnv("UPLOAD_SECRET_KEY", ""),
 
 		S3Region:          getEnv("S3_REGION", ""),
 		S3Endpoint:        getEnv("S3_ENDPOINT", ""),

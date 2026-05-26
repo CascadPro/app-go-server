@@ -23,3 +23,10 @@ func (r *FileRepository) GetFileByID(id, tag string) (*models.File, error) {
 	}
 	return &file, nil
 }
+
+func (r *FileRepository) CreateFile(file *models.File) error {
+	if err := config.DB.Create(file).Error; err != nil {
+		return err
+	}
+	return nil
+}
