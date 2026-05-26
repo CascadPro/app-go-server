@@ -29,6 +29,12 @@ func main() {
 	config.ConnectPgDatabase(cfg)
 	config.ConnectRedisDatabase(cfg)
 
+	_, _, s3_err := config.InitS3Session()
+	if s3_err != nil {
+		logger.Error("❌ Failed to initialize AWS session", s3_err)
+		return
+	}
+
 	router := gin.New()
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())

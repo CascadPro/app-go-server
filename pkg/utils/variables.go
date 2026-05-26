@@ -27,6 +27,14 @@ type Config struct {
 	RedisPort     int
 
 	JwtSecretKey string
+
+	S3Region          string
+	S3Endpoint        string
+	S3BucketName      string
+	S3AccessKeyId     string
+	S3SecretAccessKey string
+
+	UseS3 bool
 }
 
 func LoadConfig() (*Config, error) {
@@ -40,7 +48,7 @@ func LoadConfig() (*Config, error) {
 		return nil, err
 	}
 
-	postgresPort, err := strconv.Atoi(getEnv("POSTGRES_PORT", "5433"))
+	postgresPort, err := strconv.Atoi(getEnv("POSTGRES_PORT", "5432"))
 	if err != nil {
 		logger.Error("❌ Failed to load config", err)
 		return nil, err
@@ -72,6 +80,23 @@ func LoadConfig() (*Config, error) {
 		RedisPort:     redisPort,
 
 		JwtSecretKey: getEnv("JWT_SECRET_KEY", ""),
+
+		S3Region:          getEnv("S3_REGION", ""),
+		S3Endpoint:        getEnv("S3_ENDPOINT", ""),
+		S3BucketName:      getEnv("S3_BUCKET_NAME", ""),
+		S3AccessKeyId:     getEnv("S3_ACCESS_KEY_ID", ""),
+		S3SecretAccessKey: getEnv("S3_SECRET_ACCESS_KEY", ""),
+		UseS3:             getEnv("S3_REGION", "") != "" && getEnv("S3_ENDPOINT", "") != "",
+	}
+
+	if config.UseS3 {
+		if config.S3AccessKeyId == "" || config.S3SecretAccessKey == "" {
+			logger.Error("❌ Missing S3 credentials: S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY must be set.", nil)
+
+			return nil, err
+		}
+	} else {
+		logger.Error("❌ S3 is not configured. Make sure S3_REGION and S3_ENDPOINT are set if you intend to use S3.", nil)
 	}
 
 	return config, nil
