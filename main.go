@@ -39,20 +39,14 @@ func main() {
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 
-	router.GET("/ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "pong",
-			"ms":      c.GetTime("").Nanosecond(),
-		})
-	})
+	router.GET("/health", func(c *gin.Context) { c.Status(http.StatusOK) })
 
-	router.GET("/health", func(c *gin.Context) {
-		c.Status(http.StatusOK)
-	})
-
+	// Media Content
 	{
 		r := router.Group("/media")
 		r.Use(middlewares.MediaCors(cfg))
+
+		router.GET("/:tag/:id", media.Fetch)
 	}
 
 	// Auth group
