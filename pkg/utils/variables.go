@@ -86,6 +86,7 @@ func LoadConfig() (*Config, error) {
 		S3BucketName:      getEnv("S3_BUCKET_NAME", ""),
 		S3AccessKeyId:     getEnv("S3_ACCESS_KEY_ID", ""),
 		S3SecretAccessKey: getEnv("S3_SECRET_ACCESS_KEY", ""),
+		S3AllowedTags:     "docs,images,avatars",
 		UseS3:             getEnv("S3_REGION", "") != "" && getEnv("S3_ENDPOINT", "") != "",
 	}
 

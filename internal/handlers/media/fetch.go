@@ -13,13 +13,30 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
-
-var allowed_tags = []string{"docs", "images", "avatars"}
 
 func Fetch(c *gin.Context) {
 	tag := c.Param("tag")
 	id := c.Param("id")
+
+	cfg, err := utils.LoadConfig()
+	if err != nil {
+		filter.Error(c, filter.ErrorParams{Status: http.StatusInternalServerError})
+		return
+	}
+
+	errMsg, err := utils.ValidateTagParam(tag, cfg)
+	if err != nil {
+		filter.Error(c, filter.ErrorParams{Status: http.StatusBadRequest, Message: errMsg, Cause: err.Error()})
+		return
+	}
+
+	id_err := uuid.Validate(id)
+	if id_err != nil {
+		filter.Error(c, filter.ErrorParams{Status: http.StatusBadRequest, Message: "Неверный формат ID! (UUID)"})
+		return
+	}
 
 	fileRepo := repositories.NewFileRepository()
 
@@ -33,8 +50,6 @@ func Fetch(c *gin.Context) {
 		return
 	}
 
-	cfg, _ := utils.LoadConfig()
-
 	s3Svc, s3Ctx, err := config.InitS3Session()
 	if err != nil {
 		logger.Error("❌ Failed to initialize AWS session", err)
@@ -42,17 +57,7 @@ func Fetch(c *gin.Context) {
 		return
 	}
 
-	var folder string
-	switch tag {
-	case "images":
-		folder = "images/"
-	case "avatars":
-		folder = "avatars/"
-	case "docs":
-		folder = "documents/"
-	default:
-		folder = "misc/"
-	}
+	folder := utils.GetBucketFolder(tag)
 
 	objectKey := fmt.Sprintf("%s%s", folder, fileRecord.ID)
 
