@@ -40,7 +40,9 @@ func main() {
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 
-	router.GET("/health", func(c *gin.Context) { c.Status(http.StatusOK) })
+	router.GET("/health", func(c *gin.Context) {
+		c.Status(http.StatusOK)
+	})
 
 	// Media Content
 	{
