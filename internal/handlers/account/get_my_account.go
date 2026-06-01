@@ -13,8 +13,8 @@ func GetMyAccount(c *gin.Context) {
 	userID, isExists := c.Get("userID")
 	if !isExists {
 		filter.Error(c, filter.ErrorParams{
-			Status:  http.StatusInternalServerError,
-			Message: "ID пользователя не был найден в контексте"})
+			Status: http.StatusInternalServerError,
+			Cause:  "ID пользователя не был найден в контексте"})
 		return
 	}
 

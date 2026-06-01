@@ -24,7 +24,9 @@ func Register(c *gin.Context) {
 		filter.Error(c, filter.ErrorParams{
 			Status:  http.StatusBadRequest,
 			Message: "Неверно введены значения!",
-			Cause:   err.Error()})
+			Cause:   err.Error(),
+		})
+		return
 	}
 
 	var token models.Token
@@ -35,13 +37,17 @@ func Register(c *gin.Context) {
 	if err != nil {
 		filter.Error(c, filter.ErrorParams{
 			Status:  http.StatusBadRequest,
-			Message: "Ключ неверный! Пожалуйста, запросите другой ключ"})
+			Message: "Ключ неверный! Пожалуйста, запросите другой ключ",
+		})
+		return
 	}
 
 	if token.ExpiresAt.Before(time.Now()) {
 		filter.Error(c, filter.ErrorParams{
 			Status:  http.StatusBadRequest,
-			Message: "Срок действия ключа истек! Пожалуйста, запросите новый ключ"})
+			Message: "Срок действия ключа истек! Пожалуйста, запросите новый ключ",
+		})
+		return
 	}
 
 	user := models.User{PasswordHash: &dto.Password}
@@ -55,12 +61,14 @@ func Register(c *gin.Context) {
 	if user_err != nil {
 		logger.Error("Can't update User model!", user_err)
 		filter.Error(c, filter.ErrorParams{Status: http.StatusInternalServerError})
+		return
 	}
 
 	delete_err := config.DB.Delete(&token).Error
 	if delete_err != nil {
 		logger.Error("Can't delete register token!", delete_err)
 		filter.Error(c, filter.ErrorParams{Status: http.StatusInternalServerError})
+		return
 	}
 
 	filter.Success(c, "Вы успешно зарегистрировались!")

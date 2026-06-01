@@ -10,6 +10,7 @@ import (
 	"cascade/config"
 	"cascade/internal/handlers/account"
 	"cascade/internal/handlers/auth"
+	"cascade/internal/handlers/media"
 	"cascade/internal/middlewares"
 	"cascade/internal/models"
 	"cascade/pkg/logger"
@@ -29,56 +30,65 @@ func main() {
 	config.ConnectPgDatabase(cfg)
 	config.ConnectRedisDatabase(cfg)
 
+	_, _, s3_err := config.InitS3Session()
+	if s3_err != nil {
+		logger.Error("❌ Failed to initialize AWS session", s3_err)
+		return
+	}
+
 	router := gin.New()
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
-
-	router.GET("/ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "pong",
-			"ms":      c.GetTime("").Nanosecond(),
-		})
-	})
 
 	router.GET("/health", func(c *gin.Context) {
 		c.Status(http.StatusOK)
 	})
 
+	// Media Content
+	{
+		r := router.Group("/media")
+		r.Use(middlewares.MediaCors(cfg))
+
+		router.GET("/:tag/:id", media.Fetch)
+		router.POST("/upload", media.Upload)
+		router.DELETE("/:tag/:id", media.SoftDelete)
+	}
+
 	// Auth group
 	authRaLm := middlewares.NewRateLimiter(middlewares.RateLimiterConfig{
 		RedisClient: config.R.DB,
 		Limit:       5,                // 5 запросов
-		Window:      time.Minute * 15, // в минуту
-		KeyPrefix:   "auth",           // префикс для ключей
+		Window:      time.Minute * 15, // в 15 минут
+		KeyPrefix:   "auth",
 	})
 
 	{
-		r_auth := router.Group("/auth")
-		r_auth.Use(authRaLm.Middleware())
+		r := router.Group("/auth")
+		r.Use(authRaLm.Middleware())
 
-		r_auth.POST("/login", auth.Login)
-		r_auth.GET("/login/refresh", auth.GetNewTokens)
-		r_auth.POST("/logout", middlewares.AuthMiddleware(), auth.Logout)
+		r.POST("/login", auth.Login)
+		r.GET("/login/refresh", auth.GetNewTokens)
+		r.POST("/logout", middlewares.AuthMiddleware(), auth.Logout)
 
-		r_auth.POST("/register", auth.Register)
-		r_auth.GET("/register/token", middlewares.AuthMiddleware(models.RoleAdmin, models.RoleDirector),
+		r.POST("/register", auth.Register)
+		r.GET("/register/token", middlewares.AuthMiddleware(models.RoleAdmin, models.RoleDirector),
 			auth.GenerateRegisterToken)
 	}
 
 	// Account group
 	accountRaLm := middlewares.NewRateLimiter(middlewares.RateLimiterConfig{
 		RedisClient: config.R.DB,
-		Limit:       10,          // 5 запросов
+		Limit:       10,          // 10 запросов
 		Window:      time.Minute, // в минуту
-		KeyPrefix:   "account",   // префикс для ключей
+		KeyPrefix:   "account",
 	})
 
 	{
-		r_acc := router.Group("/account")
-		r_acc.Use(accountRaLm.Middleware())
-		r_acc.Use(middlewares.AuthMiddleware())
+		r := router.Group("/account")
+		r.Use(accountRaLm.Middleware())
+		r.Use(middlewares.AuthMiddleware())
 
-		r_acc.GET("/my", account.GetMyAccount)
+		r.GET("/my", account.GetMyAccount)
 	}
 
 	address := ":" + strconv.Itoa(cfg.ApplicationPort)

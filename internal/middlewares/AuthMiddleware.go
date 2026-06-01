@@ -20,16 +20,14 @@ func AuthMiddleware(roles ...models.UserRole) gin.HandlerFunc {
 		if bearer == "" {
 			filter.Error(c, filter.ErrorParams{
 				Status:  http.StatusUnauthorized,
-				Message: "Ключ авторизации не найден в запросе!"})
+				Message: "Ключ авторизации не найден в запросе!",
+			})
 			return
 		}
 
 		cfg, err := utils.LoadConfig()
 		if err != nil {
-			filter.Error(c, filter.ErrorParams{
-				Status:  http.StatusInternalServerError,
-				Message: "Something went wrong!",
-				Cause:   err.Error()})
+			filter.Error(c, filter.ErrorParams{Status: http.StatusInternalServerError})
 			return
 		}
 
@@ -40,14 +38,16 @@ func AuthMiddleware(roles ...models.UserRole) gin.HandlerFunc {
 			filter.Error(c, filter.ErrorParams{
 				Status:  http.StatusUnauthorized,
 				Message: "Ошибка во время проверки ключа!",
-				Cause:   v_err.Error()})
+				Cause:   v_err.Error(),
+			})
 			return
 		}
 
 		if len(roles) > 0 && !slices.Contains(roles, parsedToken.Role) {
 			filter.Error(c, filter.ErrorParams{
 				Status:  http.StatusForbidden,
-				Message: "У вас недостаточно прав!"})
+				Message: "У вас недостаточно прав!",
+			})
 			return
 		}
 

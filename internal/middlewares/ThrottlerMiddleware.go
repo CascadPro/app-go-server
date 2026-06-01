@@ -42,10 +42,7 @@ func (rl *RateLimiter) Middleware() gin.HandlerFunc {
 
 		allowed, remaining, resetTime, err := rl.isAllowed(key)
 		if err != nil {
-			filter.Error(c, filter.ErrorParams{
-				Status:  http.StatusInternalServerError,
-				Message: "Rate limiter error!",
-				Cause:   err.Error()})
+			filter.Error(c, filter.ErrorParams{Status: http.StatusInternalServerError})
 			return
 		}
 
@@ -57,7 +54,8 @@ func (rl *RateLimiter) Middleware() gin.HandlerFunc {
 			filter.Error(c, filter.ErrorParams{
 				Status:  http.StatusTooManyRequests,
 				Message: "Too Many Requests",
-				Cause:   "Rate limit exceeded"})
+				Cause:   "Rate limit exceeded",
+			})
 			return
 		}
 
