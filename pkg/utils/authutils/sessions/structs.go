@@ -22,8 +22,8 @@ type Location struct {
 }
 
 type Device struct {
-	Browser string `json:"browser"`
 	OS      string `json:"os"`
 	Model   string `json:"model"`
 	Type    string `json:"type"`
+	Version string `json:"version"`
 }

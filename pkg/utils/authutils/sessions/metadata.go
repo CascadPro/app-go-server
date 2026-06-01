@@ -1,23 +1,24 @@
 package sessions
 
 import (
+	"cascade/pkg/utils"
 	"fmt"
 	"net"
 	"net/http"
 	"strings"
 
 	"github.com/ipinfo/go/v2/ipinfo"
-	"github.com/ua-parser/uap-go/uaparser"
 )
 
-func getSessionMetadata(r *http.Request, userAgent string) (*SessionMetadata, error) {
+func getSessionMetadata(r *http.Request) (*SessionMetadata, error) {
 	meta := &SessionMetadata{IP: getIP(r, true)}
 
 	err := meta.parseLocation()
 	if err != nil {
 		return nil, err
 	}
-	meta.parseDevice(userAgent)
+
+	meta.parseDevice(r.UserAgent())
 
 	return meta, nil
 }
@@ -64,17 +65,15 @@ func (m *SessionMetadata) parseLocation() error {
 }
 
 func (m *SessionMetadata) parseDevice(userAgent string) error {
-	parser, err := uaparser.New()
+	ua, err := utils.ParseUserAgent(userAgent)
 	if err != nil {
 		return err
 	}
 
-	client := parser.Parse(userAgent)
-
-	m.Device.Browser = client.UserAgent.Family
-	m.Device.OS = client.Os.Family
-	m.Device.Type = client.Device.Family
-	m.Device.Model = client.Device.Model
+	m.Device.Version = ua.AppVersion
+	m.Device.OS = ua.OS
+	m.Device.Type = ua.Type
+	m.Device.Model = ua.Model
 
 	return nil
 }

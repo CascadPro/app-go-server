@@ -54,7 +54,7 @@ func CreateSession(r *http.Request, sessionID string, userID uuid.UUID, ttl time
 		ExpiresAt: time.Now().Add(ttl).Unix(),
 	}
 
-	metadata, meta_err := getSessionMetadata(r, r.UserAgent())
+	metadata, meta_err := getSessionMetadata(r)
 	if meta_err != nil {
 		logger.Error("Failed to get session metadata!", meta_err)
 		return meta_err
