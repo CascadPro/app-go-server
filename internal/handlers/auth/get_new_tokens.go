@@ -2,7 +2,6 @@ package auth
 
 import (
 	"net/http"
-	"time"
 
 	"cascade/internal/models"
 	"cascade/pkg/filter"
@@ -31,7 +30,13 @@ func GetNewTokens(c *gin.Context) {
 		filter.Error(c, filter.ErrorParams{
 			Status:  http.StatusUnauthorized,
 			Message: "Ключа для обновления не найдено или он просрочен! Авторизуйтесь снова",
+<<<<<<< Updated upstream
 			Cause:   token_err.Error()})
+=======
+			Cause:   "token_is_missing",
+		})
+		return
+>>>>>>> Stashed changes
 	}
 
 	cfg, err := utils.LoadConfig()
@@ -50,31 +55,27 @@ func GetNewTokens(c *gin.Context) {
 		filter.Error(c, filter.ErrorParams{
 			Status:  http.StatusUnauthorized,
 			Message: "Ошибка во время валидации ключа!",
+<<<<<<< Updated upstream
 			Cause:   v_err.Error()})
+=======
+			Cause:   "token_invalid",
+		})
+>>>>>>> Stashed changes
 		return
 	}
 
 	_, s_err := sessions.GetSessionByID(rt.SessionID)
 	if s_err != nil {
 		if s_err == redis.Nil {
-			c.SetCookie("refresh_token", "", -1, "/", "", false, false)
-
-			filter.Error(c, filter.ErrorParams{Status: http.StatusUnauthorized, Message: "Сессия не обнаружена!"})
+			filter.Error(c, filter.ErrorParams{Status: http.StatusUnauthorized, Message: "Сессия не обнаружена!", Cause: "no_session"})
 		} else {
 			filter.Error(c, filter.ErrorParams{Status: http.StatusBadRequest, Message: "Something went wrong!"})
 		}
 	}
 
-	new_at, new_rt := authutils.IssueTokens(rt.UserID, rt.Role, rt.SessionID, cfg)
+	new_at, _ := authutils.IssueTokens(rt.UserID, rt.Role, rt.SessionID, cfg)
 
-	c.SetCookieData(&http.Cookie{
-		Name:     "refresh_token",
-		Value:    new_rt,
-		Domain:   cfg.Domain,
-		Secure:   false,
-		HttpOnly: true,
-		Expires:  time.Now().Add(authutils.RefreshTokenLifetime),
-	})
+	c.SetCookie("refresh_token", "", -1, "/", "", false, false)
 
 	filter.Success(c, "Ключи обновлены!", gin.H{"access_token": new_at})
 }
