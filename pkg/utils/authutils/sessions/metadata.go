@@ -10,7 +10,7 @@ import (
 	"github.com/ua-parser/uap-go/uaparser"
 )
 
-func getSessionMetadata(r *http.Request, userAgent string) (*SessionMetadata, error) {
+func getSessionMetadata(r *http.Request) (*SessionMetadata, error) {
 	meta := &SessionMetadata{IP: getIP(r, true)}
 
 	err := meta.parseLocation()
