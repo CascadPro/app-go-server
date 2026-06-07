@@ -2,6 +2,12 @@ package utils
 
 import "strings"
 
+const (
+	TagImages  = "images"
+	TagAvatars = "avatars"
+	TagDocs    = "docs"
+)
+
 func ValidateTagParam(tag string, cfg *Config) (string, error) {
 	allowedTags := map[string]struct{}{}
 
@@ -20,11 +26,11 @@ func GetBucketFolder(tag string) string {
 	var folder string
 
 	switch tag {
-	case "images":
+	case TagImages:
 		folder = "images/"
-	case "avatars":
+	case TagAvatars:
 		folder = "avatars/"
-	case "docs":
+	case TagDocs:
 		folder = "documents/"
 	default:
 		folder = "misc/"
