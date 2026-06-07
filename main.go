@@ -9,6 +9,7 @@ import (
 
 	"cascade/config"
 	"cascade/internal/handlers/account"
+	account_avatar "cascade/internal/handlers/account/avatar"
 	"cascade/internal/handlers/auth"
 	"cascade/internal/handlers/media"
 	"cascade/internal/middlewares"
@@ -71,24 +72,31 @@ func main() {
 		r.POST("/logout", middlewares.AuthMiddleware(), auth.Logout)
 
 		r.POST("/register", auth.Register)
-		r.GET("/register/token", middlewares.AuthMiddleware(models.RoleAdmin, models.RoleDirector),
+		r.POST("/register/token", middlewares.AuthMiddleware(models.RoleAdmin, models.RoleDirector),
 			auth.GenerateRegisterToken)
 	}
 
 	// Account group
-	accountRaLm := middlewares.NewRateLimiter(middlewares.RateLimiterConfig{
+	avatarRaLm := middlewares.NewRateLimiter(middlewares.RateLimiterConfig{
 		RedisClient: config.R.DB,
-		Limit:       10,          // 10 запросов
-		Window:      time.Minute, // в минуту
-		KeyPrefix:   "account",
+		Limit:       10,               // 10 запросов
+		Window:      time.Minute * 10, // в 10 минут
+		KeyPrefix:   "avatar",
 	})
 
 	{
 		r := router.Group("/account")
-		r.Use(accountRaLm.Middleware())
 		r.Use(middlewares.AuthMiddleware())
 
 		r.GET("/my", account.GetMyAccount)
+
+		{
+			ar := r.Group("/avatar")
+			ar.Use(avatarRaLm.Middleware())
+
+			ar.PATCH("/update", account_avatar.UpdateAvatar)
+			ar.DELETE("/delete", account_avatar.DeleteAvatar)
+		}
 	}
 
 	address := ":" + strconv.Itoa(cfg.ApplicationPort)
