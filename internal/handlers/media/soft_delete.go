@@ -36,8 +36,8 @@ func SoftDelete(c *gin.Context) {
 		return
 	}
 
-	id_err := uuid.Validate(id)
-	if id_err != nil {
+	idErr := uuid.Validate(id)
+	if idErr != nil {
 		filter.Error(c, filter.ErrorParams{Status: http.StatusBadRequest, Message: "Неверный формат ID! (UUID)"})
 		return
 	}
