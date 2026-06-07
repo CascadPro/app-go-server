@@ -53,20 +53,20 @@ func Register(c *gin.Context) {
 	user := models.User{PasswordHash: &dto.Password}
 	user.HashPassword()
 
-	user_err := config.DB.
+	userErr := config.DB.
 		Model(&models.User{}).
 		Where(&models.User{ID: token.UserID}).
 		Update("email", dto.Email).
 		Update("password", user.PasswordHash).Error
-	if user_err != nil {
-		logger.Error("Can't update User model!", user_err)
+	if userErr != nil {
+		logger.Error("Can't update User model!", userErr)
 		filter.Error(c, filter.ErrorParams{Status: http.StatusInternalServerError})
 		return
 	}
 
-	delete_err := config.DB.Delete(&token).Error
-	if delete_err != nil {
-		logger.Error("Can't delete register token!", delete_err)
+	deleteErr := config.DB.Delete(&token).Error
+	if deleteErr != nil {
+		logger.Error("Can't delete register token!", deleteErr)
 		filter.Error(c, filter.ErrorParams{Status: http.StatusInternalServerError})
 		return
 	}

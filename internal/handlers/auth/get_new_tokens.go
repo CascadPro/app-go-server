@@ -25,8 +25,8 @@ type TokenPayload struct {
 }
 
 func GetNewTokens(c *gin.Context) {
-	rt_s, token_err := c.Cookie("refresh_token")
-	if token_err != nil {
+	rtString, tokenErr := c.Cookie("refresh_token")
+	if tokenErr != nil {
 		filter.Error(c, filter.ErrorParams{
 			Status:  http.StatusUnauthorized,
 			Message: "Ключа для обновления не найдено или он просрочен! Авторизуйтесь снова",
@@ -41,8 +41,8 @@ func GetNewTokens(c *gin.Context) {
 		return
 	}
 
-	rt, v_err := authutils.ValidateToken(rt_s, cfg)
-	if v_err != nil {
+	rt, validateErr := authutils.ValidateToken(rtString, cfg)
+	if validateErr != nil {
 		c.SetCookie("refresh_token", "", -1, "/", "", false, false)
 		filter.Error(c, filter.ErrorParams{
 			Status:  http.StatusUnauthorized,
@@ -52,9 +52,9 @@ func GetNewTokens(c *gin.Context) {
 		return
 	}
 
-	_, s_err := sessions.GetSessionByID(rt.SessionID)
-	if s_err != nil {
-		if s_err == redis.Nil {
+	_, sessionErr := sessions.GetSessionByID(rt.SessionID)
+	if sessionErr != nil {
+		if sessionErr == redis.Nil {
 			filter.Error(c, filter.ErrorParams{Status: http.StatusUnauthorized, Message: "Сессия не обнаружена!", Cause: "no_session"})
 		} else {
 			filter.Error(c, filter.ErrorParams{Status: http.StatusBadRequest, Message: "Something went wrong!"})
@@ -62,9 +62,9 @@ func GetNewTokens(c *gin.Context) {
 		return
 	}
 
-	new_at, _ := authutils.IssueTokens(rt.UserID, rt.Role, rt.SessionID, cfg)
+	newAt, _ := authutils.IssueTokens(rt.UserID, rt.Role, rt.SessionID, cfg)
 
 	c.SetCookie("refresh_token", "", -1, "/", "", false, false)
 
-	filter.Success(c, "Ключи обновлены!", gin.H{"access_token": new_at})
+	filter.Success(c, "Ключи обновлены!", gin.H{"access_token": newAt})
 }

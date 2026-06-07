@@ -32,8 +32,8 @@ func Fetch(c *gin.Context) {
 		return
 	}
 
-	id_err := uuid.Validate(id)
-	if id_err != nil {
+	validateErr := uuid.Validate(id)
+	if validateErr != nil {
 		filter.Error(c, filter.ErrorParams{Status: http.StatusBadRequest, Message: "Неверный формат ID! (UUID)"})
 		return
 	}

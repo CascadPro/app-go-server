@@ -43,12 +43,12 @@ type User struct {
 }
 
 func (u *User) HashPassword() error {
-	password_hash, err := utils.GenerateHash(*u.PasswordHash)
+	passwordHash, err := utils.GenerateHash(*u.PasswordHash)
 	if err != nil {
 		return err
 	}
 
-	u.PasswordHash = &password_hash
+	u.PasswordHash = &passwordHash
 	return nil
 }
 

@@ -33,12 +33,12 @@ func AuthMiddleware(roles ...models.UserRole) gin.HandlerFunc {
 
 		tokenString := strings.Split(bearer, " ")[1]
 
-		parsedToken, v_err := authutils.ValidateToken(tokenString, cfg)
-		if v_err != nil {
+		parsedToken, validateErr := authutils.ValidateToken(tokenString, cfg)
+		if validateErr != nil {
 			filter.Error(c, filter.ErrorParams{
 				Status:  http.StatusUnauthorized,
 				Message: "Ошибка во время проверки ключа!",
-				Cause:   v_err.Error(),
+				Cause:   validateErr.Error(),
 			})
 			return
 		}

@@ -31,8 +31,8 @@ func DeleteAvatar(c *gin.Context) {
 
 	var user models.User
 
-	u_err := config.DB.Select("id", "avatar").First(&user, "id = ?", userID).Error
-	if u_err != nil {
+	userErr := config.DB.Select("id", "avatar").First(&user, "id = ?", userID).Error
+	if userErr != nil {
 		filter.Error(c, filter.ErrorParams{Status: http.StatusNotFound, Message: "Пользователь не был найден!"})
 		return
 	}
@@ -56,9 +56,9 @@ func DeleteAvatar(c *gin.Context) {
 
 	user.Avatar = nil
 
-	up_err := config.DB.Save(&user).Error
-	if up_err != nil {
-		logger.Error("❌ Failed to update user's avatar info!", up_err)
+	updateErr := config.DB.Save(&user).Error
+	if updateErr != nil {
+		logger.Error("❌ Failed to update user's avatar info!", updateErr)
 		filter.Error(c, filter.ErrorParams{Status: http.StatusInternalServerError})
 		return
 	}

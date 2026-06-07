@@ -39,6 +39,8 @@ type Config struct {
 	UseS3 bool
 }
 
+const configError = "❌ Failed to load config"
+
 func LoadConfig() (*Config, error) {
 	if err := godotenv.Load(); err != nil {
 		logger.Error("No .env file found, using environment variables", nil)
@@ -46,19 +48,19 @@ func LoadConfig() (*Config, error) {
 
 	applicationPort, err := strconv.Atoi(getEnv("APPLICATION_PORT", "4000"))
 	if err != nil {
-		logger.Error("❌ Failed to load config", err)
+		logger.Error(configError, err)
 		return nil, err
 	}
 
 	postgresPort, err := strconv.Atoi(getEnv("POSTGRES_PORT", "5432"))
 	if err != nil {
-		logger.Error("❌ Failed to load config", err)
+		logger.Error(configError, err)
 		return nil, err
 	}
 
 	redisPort, err := strconv.Atoi(getEnv("REDIS_PORT", "6379"))
 	if err != nil {
-		logger.Error("❌ Failed to load config", err)
+		logger.Error(configError, err)
 		return nil, err
 	}
 

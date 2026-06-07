@@ -33,16 +33,16 @@ func GenerateSessionID() (string, error) {
 func GetSessionByID(sessionID string) (Session, error) {
 	var session Session
 
-	sessionString, query_err := config.R.DB.Get(config.R.Ctx, RedisSessionFolder+sessionID).Result()
-	if query_err != nil {
-		logger.Error("❌ Error during Redis session folder query!", query_err)
-		return session, query_err
+	sessionString, queryErr := config.R.DB.Get(config.R.Ctx, RedisSessionFolder+sessionID).Result()
+	if queryErr != nil {
+		logger.Error("❌ Error during Redis session folder query!", queryErr)
+		return session, queryErr
 	}
 
-	decode_err := json.Unmarshal([]byte(sessionString), &session)
-	if decode_err != nil {
-		logger.Error("❌ Error during Redis session string decoding!", decode_err)
-		return session, decode_err
+	decodeErr := json.Unmarshal([]byte(sessionString), &session)
+	if decodeErr != nil {
+		logger.Error("❌ Error during Redis session string decoding!", decodeErr)
+		return session, decodeErr
 	}
 
 	return session, nil
@@ -54,10 +54,10 @@ func CreateSession(r *http.Request, sessionID string, userID uuid.UUID, ttl time
 		ExpiresAt: time.Now().Add(ttl).Unix(),
 	}
 
-	metadata, meta_err := getSessionMetadata(r)
-	if meta_err != nil {
-		logger.Error("Failed to get session metadata!", meta_err)
-		return meta_err
+	metadata, metadataErr := getSessionMetadata(r)
+	if metadataErr != nil {
+		logger.Error("Failed to get session metadata!", metadataErr)
+		return metadataErr
 	}
 
 	session.Metadata = *metadata

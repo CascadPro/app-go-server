@@ -70,13 +70,13 @@ func Upload(c *gin.Context) {
 
 	folder := utils.GetBucketFolder(tag)
 
-	_, s3_err := s3Svc.PutObject(s3Ctx, &s3.PutObjectInput{
+	_, s3Err := s3Svc.PutObject(s3Ctx, &s3.PutObjectInput{
 		Bucket:      aws.String(cfg.S3BucketName),
 		Key:         aws.String(folder + fileID.String()),
 		Body:        bytes.NewReader(buf.Bytes()),
 		ContentType: aws.String(file.Header.Get("Content-Type")),
 	})
-	if s3_err != nil {
+	if s3Err != nil {
 		filter.Error(c, filter.ErrorParams{Status: http.StatusInternalServerError})
 		return
 	}

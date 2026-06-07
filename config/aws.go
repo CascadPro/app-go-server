@@ -28,12 +28,12 @@ func InitS3Session() (*s3.Client, context.Context, error) {
 		Credentials:  credentials.NewStaticCredentialsProvider(cfg.S3AccessKeyId, cfg.S3SecretAccessKey, ""),
 	})
 
-	_, s_err := client.CreateSession(ctx, &s3.CreateSessionInput{
+	_, sessionErr := client.CreateSession(ctx, &s3.CreateSessionInput{
 		Bucket:      aws.String(cfg.S3BucketName),
 		SessionMode: types.SessionModeReadWrite,
 	})
-	if s_err != nil {
-		return nil, nil, s_err
+	if sessionErr != nil {
+		return nil, nil, sessionErr
 	}
 
 	return client, ctx, nil
