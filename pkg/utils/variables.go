@@ -11,6 +11,7 @@ import (
 )
 
 type Config struct {
+	Connection      string
 	Domain          string
 	ApplicationPort int
 	ApplicationUrl  string
@@ -68,6 +69,7 @@ func LoadConfig() (*Config, error) {
 	allowedOriginsList := strings.Split(allowedOrigins, ",")
 
 	config := &Config{
+		Connection:      getEnv("CONNECTION", "offline"),
 		Domain:          getEnv("DOMAIN", "localhost"),
 		ApplicationPort: applicationPort,
 		ApplicationUrl:  os.ExpandEnv(getEnv("APPLICATION_URL", "")),

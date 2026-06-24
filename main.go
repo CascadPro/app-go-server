@@ -31,10 +31,15 @@ func main() {
 	config.ConnectPgDatabase(cfg)
 	config.ConnectRedisDatabase(cfg)
 
-	_, _, s3_err := config.InitS3Session()
-	if s3_err != nil {
-		logger.Error("❌ Failed to initialize AWS session", s3_err)
-		return
+	if cfg.Connection == "online" {
+		_, _, s3_err := config.InitS3Session()
+		if s3_err != nil {
+			logger.Error("❌ Failed to initialize AWS session", s3_err)
+			return
+		}
+		logger.Info("✅ AWS session is initialized successfully")
+	} else {
+		logger.Info("ℹ	Skipped initializing AWS session, cause connection is offline")
 	}
 
 	router := gin.New()
@@ -50,9 +55,9 @@ func main() {
 		r := router.Group("/media")
 		r.Use(middlewares.MediaCors(cfg))
 
-		router.GET("/:tag/:id", media.Fetch)
-		router.POST("/upload", media.Upload)
-		router.DELETE("/:tag/:id", media.SoftDelete)
+		r.GET("/:tag/:id", media.Fetch)
+		r.POST("/upload", media.Upload)
+		r.DELETE("/:tag/:id", media.SoftDelete)
 	}
 
 	// Auth group
@@ -101,6 +106,7 @@ func main() {
 
 	address := ":" + strconv.Itoa(cfg.ApplicationPort)
 
+	logger.Info("⚙	Connection mode is " + cfg.Connection)
 	logger.Info("🚀 Server is running at " + cfg.ApplicationUrl)
 
 	if err := router.Run(address); err != nil {

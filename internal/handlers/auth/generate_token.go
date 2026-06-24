@@ -12,14 +12,14 @@ import (
 	"cascade/pkg/filter"
 )
 
-type GenRegTokenDto struct {
-	Name     string  `json:"name" binding:"required,alpha"`
-	Surname  string  `json:"surname" binding:"required,alpha"`
-	LastName *string `json:"last_name" binding:"alpha"`
+type GenerateRegisterTokenDto struct {
+	Name     string  `json:"name" binding:"required,max=255"`
+	Surname  string  `json:"surname" binding:"required,max=255"`
+	LastName *string `json:"last_name" binding:"omitempty,max=255"`
 }
 
 func GenerateRegisterToken(c *gin.Context) {
-	var dto GenRegTokenDto
+	var dto GenerateRegisterTokenDto
 	if err := c.ShouldBind(&dto); err != nil {
 		filter.Error(c, filter.ErrorParams{
 			Status:  http.StatusBadRequest,
