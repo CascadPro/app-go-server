@@ -52,7 +52,7 @@ func GetNewTokens(c *gin.Context) {
 		return
 	}
 
-	_, sessionErr := sessions.GetSessionByID(rt.SessionID)
+	_, sessionErr := sessions.GetSessionByID(rt.UserID, rt.SessionID)
 	if sessionErr != nil {
 		if sessionErr == redis.Nil {
 			filter.Error(c, filter.ErrorParams{Status: http.StatusUnauthorized, Message: "Сессия не обнаружена!", Cause: "no_session"})

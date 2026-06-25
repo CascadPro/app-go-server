@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -30,10 +31,12 @@ func GenerateSessionID() (string, error) {
 	return hex.EncodeToString(bytes), nil
 }
 
-func GetSessionByID(sessionID string) (Session, error) {
+func GetSessionByID(userID uuid.UUID, sessionID string) (Session, error) {
 	var session Session
 
-	sessionString, queryErr := config.R.DB.Get(config.R.Ctx, RedisSessionFolder+sessionID).Result()
+	key := fmt.Sprintf("%s%s:%s", RedisSessionFolder, userID, sessionID)
+
+	sessionString, queryErr := config.R.DB.Get(config.R.Ctx, key).Result()
 	if queryErr != nil {
 		logger.Error("❌ Error during Redis session folder query!", queryErr)
 		return session, queryErr
@@ -68,14 +71,18 @@ func CreateSession(r *http.Request, sessionID string, userID uuid.UUID, ttl time
 		return err
 	}
 
-	return config.R.DB.Set(config.R.Ctx, RedisSessionFolder+sessionID, jsonString, ttl).Err()
+	key := fmt.Sprintf("%s%s:%s", RedisSessionFolder, userID, sessionID)
+
+	return config.R.DB.Set(config.R.Ctx, key, jsonString, ttl).Err()
 }
 
-func DeleteSession(sessionIDs ...string) error {
+func DeleteUserSession(userID string, sessionIDs ...string) error {
 	var keys []string
 
+	key := fmt.Sprintf("%s%s:", RedisSessionFolder, userID)
+
 	for _, id := range sessionIDs {
-		keys = append(keys, RedisSessionFolder+id)
+		keys = append(keys, key+id)
 	}
 
 	return config.R.DB.Del(config.R.Ctx, keys...).Err()

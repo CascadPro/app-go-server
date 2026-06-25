@@ -2,6 +2,7 @@ package auth
 
 import (
 	"fmt"
+	"net/http"
 
 	"cascade/pkg/filter"
 	"cascade/pkg/utils/authutils/sessions"
@@ -10,10 +11,15 @@ import (
 )
 
 func Logout(c *gin.Context) {
-	sessionID, isExists := c.Get("sessionID")
+	sessionID, isSIDExists := c.Get("sessionID")
+	userID, isIDExists := c.Get("userID")
 
-	if isExists {
-		sessions.DeleteSession(fmt.Sprintf("%s", sessionID))
+	if isSIDExists && isIDExists {
+		err := sessions.DeleteUserSession(fmt.Sprint(userID), fmt.Sprint(sessionID))
+		if err != nil {
+			filter.Error(c, filter.ErrorParams{Status: http.StatusInternalServerError, Cause: err.Error()})
+			return
+		}
 	}
 
 	c.SetCookie("refresh_token", "", -1, "/", "", false, false)
