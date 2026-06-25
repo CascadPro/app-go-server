@@ -3,7 +3,6 @@ package main
 import (
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -15,6 +14,7 @@ import (
 	"cascade/internal/middlewares"
 	"cascade/internal/models"
 	"cascade/pkg/logger"
+	"cascade/pkg/ratelimit"
 	"cascade/pkg/utils"
 )
 
@@ -61,16 +61,9 @@ func main() {
 	}
 
 	// Auth group
-	authRaLm := middlewares.NewRateLimiter(middlewares.RateLimiterConfig{
-		RedisClient: config.R.DB,
-		Limit:       5,                // 5 запросов
-		Window:      time.Minute * 15, // в 15 минут
-		KeyPrefix:   "auth",
-	})
-
 	{
 		r := router.Group("/auth")
-		r.Use(authRaLm.Middleware())
+		r.Use(ratelimit.AuthRateLimiter.Middleware())
 
 		r.POST("/login", auth.Login)
 		r.GET("/login/refresh", auth.GetNewTokens)
@@ -81,14 +74,8 @@ func main() {
 			auth.GenerateRegisterToken)
 	}
 
-	// Account group
-	avatarRaLm := middlewares.NewRateLimiter(middlewares.RateLimiterConfig{
-		RedisClient: config.R.DB,
-		Limit:       10,               // 10 запросов
-		Window:      time.Minute * 10, // в 10 минут
-		KeyPrefix:   "avatar",
-	})
 
+	// Account group
 	{
 		r := router.Group("/account")
 		r.Use(middlewares.AuthMiddleware())
@@ -97,7 +84,7 @@ func main() {
 
 		{
 			ar := r.Group("/avatar")
-			ar.Use(avatarRaLm.Middleware())
+			ar.Use(ratelimit.AvatarRateLimiter.Middleware())
 
 			ar.PATCH("/update", account_avatar.UpdateAvatar)
 			ar.DELETE("/delete", account_avatar.DeleteAvatar)

@@ -1,4 +1,4 @@
-package middlewares
+package ratelimit
 
 import (
 	"fmt"
